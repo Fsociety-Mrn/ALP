@@ -623,8 +623,8 @@ CALC_MULTIPLICATION_CHOOSE_BASE proc
 		; cmp al,'2'					; cmp bh,2 mali to
 		; je MUL_BASE14
 
-		; cmp al,'3'						; cmp bh,3 mali to
-		; je MUL_BASE6
+		cmp al,'3'						; cmp bh,3 mali to
+		je MUL_BASE6
 		
 		cmp al,'4'						; cmp bh,4 mali to
 		je CALC_MAIN
@@ -1995,11 +1995,11 @@ MUL_BASE3 proc
 
 ; first input
         mov ah,09h
-        lea dx,mnum1  			; Minuend
+        lea dx,mnum1  				; Minuend
         int 21h
 
 		; Print dot character
-        lea dx, dot     		; Load dot character = '00.'
+        lea dx, dot     			; Load dot character = '00.'
         int 21h
 
 		; ======= input first digit
@@ -2351,7 +2351,7 @@ MUL_BASE3 proc
 		add al,[A]
 		mov [H],al
 
-; ----------------------------------- LASTXXXX PHASE 2 ADDITION
+; ----------------------------------- LASTXXXX PHASE ADDITION
 ;					D C B A  --- setteled
 ; 			      H G F E
 ; 				L K J I
@@ -2381,9 +2381,10 @@ MUL_BASE3 proc
 		sub bx,bx
 		sub cx,cx
 
-		; G + J
+		; G + J + REMAINDER
 		mov al,[G]
 		add al,[J]
+		add al,[E]
 		mov [J],al
 
 		sub ax,ax				; clear ax
@@ -2401,9 +2402,10 @@ MUL_BASE3 proc
 		sub bx,bx
 		sub cx,cx
 
-		; H + K
+		; H + K + REAMAINDER
 		mov al,[H]
 		add al,[K]
+		add al,[E]
 		mov [K],al
 
 		sub ax,ax				; clear ax
@@ -2415,8 +2417,10 @@ MUL_BASE3 proc
 
 		mov [K],ah				; quoitient
 
+		mov al,[L]
 		add al,[E]
 		mov [L],al
+
 ;---------------------------- print the result
 		mov ah,09h
         lea dx,res7 	     ; SUM
@@ -2448,15 +2452,538 @@ MUL_BASE3 proc
 		add dl,'0'
     	int 21h
 
-		; mov dl,[I]     ; second digit
-		; add dl,'0'
-    	; int 21h
+		mov dl,[I]     ; second digit
+		add dl,'0'
+    	int 21h
 
 
 
 MUL_BASE3 endp
 		
 MUL_BASE3_AGAIN proc
+        mov ah,09h
+        lea dx,mloop1
+        int 21h
+		mov ah,01h		
+        int 21h
+        mov bh,al
+		int 21h
+		
+		cmp bh,'Y'
+		je mulY_BASE3
+		cmp bh,'y' ;if 'y' is selected
+		je mulY_BASE3
+		
+		cmp bh,'N' ;if 'n' is selected
+		je mulN_BASE3
+		cmp bh,'n' ;if 'n' is selected
+		je mulN_BASE3
+		
+		mov ah,09h
+		lea dx,inv
+		int 21h
+		lea dx,any
+		int 21h
+		mov ah,01h
+		int 21h
+		
+		mulY_BASE3:
+			jmp MUL_BASE3
+		mulN_BASE3:
+			jmp CALC_MULTIPLICATION_CHOOSE_BASE 
+
+MUL_BASE3_AGAIN endp
+
+MUL_BASE6 proc
+		
+; pang clear screeen
+		mov ax,0600h
+        mov bh,70h
+        mov cx,0000h
+        mov dx,184fh
+        int 10h
+        mov bh,00h
+        mov ah,02h
+        mov dx,011Eh
+        int 10h
+
+		call linefeed
+
+        mov ah,09h
+        lea dx,menu233  ; ==== MULTIPLICATION BASE 06 =====
+        int 21h
+		
+		call linefeed
+
+; first input
+        mov ah,09h
+        lea dx,mnum5  				 ; Minuend
+        int 21h
+
+		; Print dot character
+        lea dx, dot     			; Load dot character = '00.'
+        int 21h
+
+		; ======= input first digit
+		mov ah,01h
+		int 21h
+		mov [inputA1],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputA1],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl MUL_BASE6
+
+		cmp [inputA1],'5'
+		jg MUL_BASE6	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputA1, '0'
+
+		; ============================== ;
+
+		; =======  input second digit
+		mov ah,01h
+		int 21h
+		mov [inputA2],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputA2],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl MUL_BASE6
+
+		cmp [inputA2],'5'
+		jg MUL_BASE6	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputA2, '0'
+		; ============================== ;
+
+		; =======   input third digit
+		mov ah,01h
+		int 21h
+		mov [inputA3],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputA3],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl MUL_BASE6
+
+		cmp [inputA3],'5'
+		jg MUL_BASE6	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputA3, '0'
+		; ============================== ;
+		
+
+; second input
+        mov ah,09h
+        lea dx,mnum6 				; Subtrahend
+        int 21h
+
+		; Print dot character
+        lea dx, dot     			; Load dot character = '00.'
+        int 21h
+
+		; ======= input first digit
+		mov ah,01h
+		int 21h
+		mov [inputB1],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputB1],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl MUL_BASE6
+
+		cmp [inputB1],'5'
+		jg MUL_BASE6	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputB1, '0'
+		; ============================== ;
+
+		; =======  input second digit
+		mov ah,01h
+		int 21h
+		mov [inputB2],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputB2],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl MUL_BASE6
+
+		cmp [inputB2],'5'
+		jg MUL_BASE6	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputB2, '0'
+		; ============================== ;
+
+		; =======   input third digit
+		mov ah,01h
+		int 21h
+		mov [inputB3],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputB3],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl MUL_BASE6
+
+		cmp [inputB3],'5'
+		jg MUL_BASE6	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputB3, '0'
+		; ============================== ;
+
+; -------------------- Total in base 5 ------------------------------ ;
+		; Multiplicand  =  0 . inputA1 inputA2 inputA3
+		; Multiplier    =  0 . inputB1 inputB2 inputB3
+; ============= inputB3 x Multiplicand ============================== ;
+
+; ---------------------------- first layer multiply
+
+		; multiply
+		mov cl,[inputA3] 		; Multiplicand = first digit
+		mov al,[inputB3]		; first multiplier
+		mul cl
+
+		mov [A],al 				; first digit 
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[A]   			; transfer the A to al register
+		mov bl,03h				; base 3
+		div bl
+		mov [A],ah				; remainder
+		mov bl, al				; quotient
+
+
+; second layer multiply
+		mov cl,[inputA2] 		; Multiplicand = first digit
+		mov al,[inputB3]		; first multiplier
+		mul cl
+
+		add al,bl				; quotient
+		mov [B],al 				; second digit 		 
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[B]   			; transfer the A to al register
+		mov bl,05h				; base 3
+		div bl
+
+		mov [B],ah				; remainder
+		mov bl,al				; quotient
+
+; third layer multiply
+		mov cl,[inputA1] 		; Multiplicand = first digit
+		mov al,[inputB3]		; first multiplier
+		mul cl
+
+		add al,bl				; add the quotient
+
+		mov [C],al ; second digit 		
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[C]   			; transfer the A to al register
+		mov bl,05h				; base 3
+		div bl
+		mov [C],ah				; remainder
+		mov [D],al				; quotient
+
+; ---------------------------- second layer multiply
+		sub ax,ax
+		sub bx,bx
+		sub cx,cx
+
+		; multiply
+		mov cl,[inputA3] 		; Multiplicand = first digit
+		mov al,[inputB2]		; first multiplier
+		mul cl
+
+		mov [E],al 				; first digit 
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[E]   			; transfer the A to al register
+		mov bl,05h				; base 3
+		div bl
+		mov [E],ah				; remainder
+		mov bl, al				; quotient
+
+
+; second layer multiply
+		mov cl,[inputA2] 		; Multiplicand = first digit
+		mov al,[inputB2]		; first multiplier
+		mul cl
+
+		add al,bl				; quotient
+		mov [F],al 				; second digit 		 
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[F]   			; transfer the A to al register
+		mov bl,05h				; base 3
+		div bl
+
+		mov [F],ah				; remainder
+		mov bl,al				; quotient
+
+; third layer multiply
+		mov cl,[inputA1] 		; Multiplicand = first digit
+		mov al,[inputB2]		; first multiplier
+		mul cl
+
+		add al,bl				; add the quotient
+
+		mov [G],al ; second digit 		
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[G]   			; transfer the A to al register
+		mov bl,05h				; base 3
+		div bl
+		mov [G],ah				; remainder
+		mov [H],al				; quotient
+
+; ---------------------------- third layer multiply
+
+		; reset register
+		sub ax,ax
+		sub bx,bx
+		sub cx,cx
+
+		; multiply
+		mov cl,[inputA3] 		; Multiplicand = first digit
+		mov al,[inputB1]		; first multiplier
+		mul cl
+
+		mov [I],al 				; first digit 
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[I]   			; transfer the A to al register
+		mov bl,05h				; base 3
+		div bl
+		mov [I],ah				; remainder
+		mov bl, al				; quotient
+
+
+; second layer multiply
+		mov cl,[inputA2] 		; Multiplicand = first digit
+		mov al,[inputB1]		; first multiplier
+		mul cl
+
+		add al,bl				; quotient
+		mov [J],al 				; second digit 		 
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[J]   			; transfer the A to al register
+		mov bl,05h				; base 3
+		div bl
+
+		mov [J],ah				; remainder
+		mov bl,al				; quotient
+
+; third layer multiply
+		mov cl,[inputA1] 		; Multiplicand = first digit
+		mov al,[inputB1]		; first multiplier
+		mul cl
+
+		add al,bl				; add the quotient
+
+		mov [K],al ; second digit 		
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[K]   			; transfer the A to al register
+		mov bl,05h				; base 3
+		div bl
+		mov [K],ah				; remainder
+		mov [L],al				; quotient
+
+; ----------------------------------- PHASE 2 ADDITION
+; 					D C B A
+; 			      H G F E
+		
+		; reset register
+		sub ax,ax
+		sub bx,bx
+		sub cx,cx
+
+		; B + E
+		mov al,[B]
+		add al,[E]
+		mov [E],al
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[E]
+		mov bl,05h				; base 3
+		div bl
+
+		mov [E],ah				; quoitient
+		mov [A],al				; remainder
+
+		; ----- reset register
+		sub ax,ax
+		sub bx,bx
+		sub cx,cx
+
+		; F + C + reamaind
+		mov al,[C]
+		add al,[F]
+		add al,[A]				; remainder
+		mov [F],al				; total
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[F]
+		mov bl,05h				; base 3
+		div bl
+
+		mov [F],ah				; quoitient
+		mov [A],al				; remainder
+
+; ----- reset register
+		sub ax,ax
+		sub bx,bx
+		sub cx,cx
+
+		; F + C + reamaind
+		mov al,[D]
+		add al,[G]
+		add al,[A]				; remainder
+		mov [G],al				; total
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[G]
+		mov bl,05h				; base 3
+		div bl
+
+		mov [G],ah				; quoitient
+		mov [A],al				; remainder
+
+		mov al,[H]
+		add al,[A]
+		mov [H],al
+
+; ----------------------------------- LASTXXXX PHASE ADDITION
+;					D C B A  --- setteled
+; 			      H G F E
+; 				L K J I
+
+		; reset register
+		sub ax,ax
+		sub bx,bx
+		sub cx,cx
+
+		; F + I
+		mov al,[F]
+		add al,[I]
+		mov [I],al
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[I]
+		mov bl,05h				; base 3
+		div bl
+
+		mov [I],ah				; quoitient
+		mov [E],al				; remainder
+
+		; reset register
+		sub ax,ax
+		sub bx,bx
+		sub cx,cx
+
+		; G + J + REMAINDER
+		mov al,[G]
+		add al,[J]
+		add al,[E]
+		mov [J],al
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[J]
+		mov bl,05h				; base 3
+		div bl
+
+		mov [J],ah				; quoitient
+		mov [E],al				; remainder
+
+		; reset register
+		sub ax,ax
+		sub bx,bx
+		sub cx,cx
+
+		; H + K + REAMAINDER
+		mov al,[H]
+		add al,[K]
+		add al,[E]
+		mov [K],al
+
+		sub ax,ax				; clear ax
+
+		; division
+		mov al,[K]
+		mov bl,05h				; base 3
+		div bl
+
+		mov [K],ah				; quoitient
+
+		; mov al,[L]
+		add al,[E]
+		mov [L],al
+
+
+;---------------------------- print the result
+		mov ah,09h
+        lea dx,res7 	     ; SUM
+        int 21h
+		
+		mov ah, 02h 		 ; pang print out ito
+
+		mov dl,0 	 ; first digit
+		add dl,'0'
+    	int 21h
+
+		mov dl,0 	 ; first digit
+		add dl,'0'
+    	int 21h
+
+		; Print dot character
+        mov dl, '.'     	 ; dot'
+        int 21h
+
+		mov dl,[L]     ; second digit
+		add dl,'0'
+    	int 21h
+
+		mov dl,[K]	 ; third digit
+		add dl,'0'
+    	int 21h
+
+		mov dl,[J]	 ; last digit
+		add dl,'0'
+    	int 21h
+
+		mov dl,[I]     ; second digit
+		add dl,'0'
+    	int 21h
+
+
+
+MUL_BASE6 endp
+		
+MUL_BASE6_AGAIN proc
         mov ah,09h
         lea dx,mloop1
         int 21h
@@ -2484,12 +3011,11 @@ MUL_BASE3_AGAIN proc
 		int 21h
 		
 		mulY_BASE6:
-			jmp MUL_BASE3
+			jmp MUL_BASE6
 		mulN_BASE6:
 			jmp CALC_MULTIPLICATION_CHOOSE_BASE 
 
-MUL_BASE3_AGAIN endp
-
+MUL_BASE6_AGAIN endp
 		
 CONV_MAIN:
         call cls
