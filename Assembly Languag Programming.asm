@@ -145,7 +145,7 @@
         dnum1 db 0dh,0ah, 	"     				Dividend [00-22]   : $"
         dnum2 db 0dh,0ah, 	"      				Divisor [00-22]: $"
 		
-        res10 db 0dh,0ah, 	"      				Product is     : $"
+        res10 db 0dh,0ah, 	"      				Quotient is     : $"
 		rem1 db 0dh,0ah, 	" 					Remainder:       $"
         dloop1 db 0dh,0ah, 	"       				Divide Again? [Y/N]: $"
 
@@ -154,7 +154,7 @@
         dnum3 db 0dh,0ah, 	"     				Dividend [00-DD]   : $"
         dnum4 db 0dh,0ah, 	"      				Divisor [00-DD]: $"
 		
-        res11 db 0dh,0ah, 	"      				Product is     : $"
+        res11 db 0dh,0ah, 	"      				Quotient is     : $"
 		rem2 db 0dh,0ah, 	" 					Remainder:       $"
         dloop2 db 0dh,0ah, 	"       				Divide Again? [Y/N]: $"	
 
@@ -163,7 +163,7 @@
         dnum5 db 0dh,0ah, 	"     				Dividend [00-55]   : $"
         dnum6 db 0dh,0ah, 	"      				Divnisor [00-55]: $"
 		
-        res12 db 0dh,0ah, 	"      				Product is     : $"
+        res12 db 0dh,0ah, 	"      				Quotient is     : $"
 		rem3 db 0dh,0ah, 	" 					Remainder:       $"
         dloop3 db 0dh,0ah, 	"       				Divide Again? [Y/N]: $"			
 			
@@ -406,8 +406,8 @@ CALC_MAIN proc
 		cmp bh,3
 		je CALC_MULTIPLICATION_CHOOSE_BASE
 		
-		; cmp bh,4
-		; je CALC_DIVISION_CHOOSE_BASE
+		cmp bh,4
+		je CALC_DIVISION_CHOOSE_BASE
 		
 		cmp bh,5
 		je MAIN_MENU
@@ -635,6 +635,81 @@ CALC_MULTIPLICATION_CHOOSE_BASE proc
 		jmp CALC_MULTIPLICATION_CHOOSE_BASE ; kapag wala sa condition
 
 CALC_MULTIPLICATION_CHOOSE_BASE endp
+
+;==================== CALC MULTIPLICATION: CHOOSE BASE PROCESS======================			
+CALC_DIVISION_CHOOSE_BASE proc
+				
+        call cls
+        
+        mov ax,0600h
+        mov bh,70h
+        mov cx,0000h
+        mov dx,184fh
+        int 10h
+        mov bh,00h
+        mov ah,02h
+        mov dx,011Eh
+        int 10h
+
+		call linefeed
+
+		mov ah,09h
+        lea dx,multplication
+        int 21h
+		
+        mov ah,09h
+        lea dx,menu21
+        int 21h
+		
+		call linefeed
+		
+        mov ah,09h
+        lea dx,b3cal  ; base 3 calculator
+        int 21h
+		
+        ; mov ah,09h
+        ; lea dx,b14cal ; base 14 calculator
+        ; int 21h
+		
+		mov ah,09h
+		lea dx,b6cal  ; base 6 calculator
+		int 21h
+		
+		mov ah,09h
+		lea dx,b2cal
+		int 21h
+		
+		call linefeed
+		
+		mov ah,09h
+		lea dx,inpt3
+		int 21h
+		
+		mov ah,01h 						; mov ah,1 = dapat 01h to
+        int 21h
+        ; mov bh,al = rekta na al
+
+		; NOTE: di na kekalangan nito , bawat choices dapat may '' ganto
+        ; sub bh,48
+		
+		cmp al,'1'					; cmp bh,1 mali to
+		je DIV_BASE3
+		
+		; cmp al,'2'					; cmp bh,2 mali to
+		; je MUL_BASE14
+
+		; cmp al,'3'						; cmp bh,3 mali to
+		; je DIV_BASE6
+		
+		cmp al,'4'						; cmp bh,4 mali to
+		je CALC_MAIN
+		
+		; cmp bh,5 di na kelangan to
+		; jge invalid_calc_choose_base
+
+		jmp CALC_DIVISION_CHOOSE_BASE ; kapag wala sa condition
+
+CALC_DIVISION_CHOOSE_BASE endp
 
 ;================= ADDITION TO OTHER BASE ================;		
 ;================= BASE 3 ADDITION STARTS HERE ==============;
@@ -3016,7 +3091,231 @@ MUL_BASE6_AGAIN proc
 			jmp CALC_MULTIPLICATION_CHOOSE_BASE 
 
 MUL_BASE6_AGAIN endp
+
+
+
+DIV_BASE3 proc
 		
+; pang clear screeen
+		mov ax,0600h
+        mov bh,70h
+        mov cx,0000h
+        mov dx,184fh
+        int 10h
+        mov bh,00h
+        mov ah,02h
+        mov dx,011Eh
+        int 10h
+
+		call linefeed
+
+        mov ah,09h
+        lea dx,menu241  ; ==== MULTIPLICATION BASE 06 =====
+        int 21h
+		
+		call linefeed
+
+; first input
+        mov ah,09h
+        lea dx,dnum1  				 ; Dividend
+        int 21h
+
+		; Print dot character
+        lea dx, dot     			; Load dot character = '00.'
+        int 21h
+
+		; ======= input first digit
+		mov ah,01h
+		int 21h
+		mov [inputA1],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputA1],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl DIV_BASE3
+
+		cmp [inputA1],'2'
+		jg DIV_BASE3	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputA1, '0'
+
+		; ============================== ;
+
+		; =======  input second digit
+		mov ah,01h
+		int 21h
+		mov [inputA2],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputA2],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl DIV_BASE3
+
+		cmp [inputA2],'2'
+		jg DIV_BASE3	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputA2, '0'
+		; ============================== ;
+
+		; =======   input third digit
+		mov ah,01h
+		int 21h
+		mov [inputA3],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputA3],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl DIV_BASE3
+
+		cmp [inputA3],'2'
+		jg DIV_BASE3	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputA3, '0'
+		; ============================== ;
+		
+
+; second input
+        mov ah,09h
+        lea dx,dnum2 				; Divisor
+        int 21h
+
+		; Print dot character
+        lea dx, dot     			; Load dot character = '00.'
+        int 21h
+
+		; ======= input first digit
+		mov ah,01h
+		int 21h
+		mov [inputB1],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputB1],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl DIV_BASE3
+
+		cmp [inputB1],'2'
+		jg DIV_BASE3	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputB1, '0'
+		; ============================== ;
+
+		; =======  input second digit
+		mov ah,01h
+		int 21h
+		mov [inputB2],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputB2],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl DIV_BASE3
+
+		cmp [inputB2],'2'
+		jg DIV_BASE3	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputB2, '0'
+		; ============================== ;
+
+		; =======   input third digit
+		mov ah,01h
+		int 21h
+		mov [inputB3],al			; store first digit to inputA1
+
+		; filter the digits
+		cmp [inputB3],'0'         	; reject input less than 0 | NOTE : NIREKTA BALIK KO SA FUNCTION
+		jl DIV_BASE3
+
+		cmp [inputB3],'2'
+		jg DIV_BASE3	   			; reject input higher than 5| NOTE : NIREKTA BALIK KO SA FUNCTION
+
+		sub inputB3, '0'
+		; ============================== ;
+
+; -------------------- Total in base 3 ------------------------------ ;
+; 		Dividend = inputA1 inputA2 inputA3
+; 		Divisor =  inputB1 inputB2 inputA3
+
+		sub ax,ax
+
+		; Dividend
+		mov al, [inputA1]    ; Load A1 into register AX
+		mov bl, [inputB1]    ; Load B1 into register BX
+		div bl            ; Divide AX by BX, quotient will be stored in AX
+
+		mov cl, [inputA2]    ; Load A2 into register CX
+		mov dl, [inputB2]    ; Load B2 into register DX
+		div dl            ; Divide CX by DX, quotient will be stored in AX (since previous quotient is already in AX)
+
+		mov al, [inputA3]    ; Load A3 into register AX
+		mov bl, [inputA3]    ; Load B3 into register BX
+		div bl            ; Divide AX by BX, quotient will be stored in AX
+
+		; al = quiotient
+		; ah = remainder
+
+		mov cx,ax
+
+
+
+
+;---------------------------- print the result
+
+		mov ah,09h
+        lea dx,res10 	    ; quotient
+        int 21h
+
+		mov ah, 02h 		; pang print out ito
+
+		mov dl,cl 	 		; first digit
+		add dl,'0'
+    	int 21h
+
+		mov ah,09h
+        lea dx,rem1 	    ; reamainder
+        int 21h
+
+		mov ah, 02h 		; pang print out ito
+		mov dl,ch	 		; first digit
+		add dl,'0'
+    	int 21h
+
+
+
+
+DIV_BASE3 endp
+		
+DIV_BASE3_AGAIN proc
+        mov ah,09h
+        lea dx,dloop1
+        int 21h
+		mov ah,01h		
+        int 21h
+        mov bh,al
+		int 21h
+		
+		cmp bh,'Y'
+		je divY_BASE3
+		cmp bh,'y' ;if 'y' is selected
+		je divY_BASE3
+		
+		cmp bh,'N' ;if 'n' is selected
+		je divN_BASE3
+		cmp bh,'n' ;if 'n' is selected
+		je divN_BASE3
+		
+		mov ah,09h
+		lea dx,inv
+		int 21h
+		lea dx,any
+		int 21h
+		mov ah,01h
+		int 21h
+		
+		divY_BASE3:
+			jmp DIV_BASE3
+		divN_BASE3:
+			jmp CALC_MULTIPLICATION_CHOOSE_BASE 
+
+DIV_BASE3_AGAIN endp
+
+
+
+
+
 CONV_MAIN:
         call cls
          
